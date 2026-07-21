@@ -71,14 +71,34 @@ job-finder/
 
 ### Búsqueda completa
 ```bash
+# Perfil default
 python scripts/fetch-all.py
+
+# Perfil específico (multi-perfil)
+python scripts/fetch-all.py --profile senior      # → profile-senior.yaml
+python scripts/fetch-all.py --profile freelance   # → profile-freelance.yaml
+
+# Opciones adicionales
+python scripts/fetch-all.py --no-telegram    # skip notificación
+python scripts/fetch-all.py --no-cleanup     # skip limpieza automática
+python scripts/fetch-all.py --no-table       # skip tabla en terminal
+python scripts/fetch-all.py --debug          # modo verbose
 ```
 
 Esto ejecuta el pipeline completo:
-1. **Fetch** — Busca ofertas en GitHub Issues + LinkedIn + WeWorkRemotely
-2. **Rank** — Scorrea cada oferta contra tu perfil
-3. **Notify** — Envía top N por Telegram
-4. **Report** — Guarda resultados en `output/{fecha}/`
+1. **Cleanup** — Limpia resultados > 15 días
+2. **Fetch** — Busca ofertas en WeWorkRemotely + RemoteOK + StackOverflow + LinkedIn
+3. **Dedup** — Elimina duplicados por título + empresa
+4. **Rank** — Scorrea cada oferta contra tu perfil
+5. **Stats** — Genera estadísticas del mercado
+6. **Notify** — Envía top N por Telegram
+7. **Report** — Guarda resultados en `output/{fecha}/`
+
+### Investigar empresa + preparar entrevista
+```bash
+python scripts/feedback.py --research <url>              # empresa específica
+python scripts/feedback.py --research --last-run         # empresas del último run
+```
 
 ### Ver resultados previos
 Los resultados quedan guardados en `output/YYYY-MM-DD/` con formato Markdown y JSON.
@@ -146,8 +166,34 @@ linkedin:
 | Remote | 10% | Modalidad de trabajo |
 | Recency | 10% | Frescura de la publicación |
 
+## 🎭 Multi-Perfil
+
+Podés tener varios perfiles para distintos tipos de búsqueda:
+
+```bash
+# Búsqueda full-time (salario anual, senior)
+python scripts/fetch-all.py --profile senior
+
+# Búsqueda freelance (tarifa por hora)
+python scripts/fetch-all.py --profile freelance
+```
+
+Cada perfil tiene su propio archivo: `profile-senior.yaml`, `profile-freelance.yaml`, etc.
+Usá los templates incluidos como base y personalizalos.
+
+## 📊 Market Stats
+
+Cada ejecución genera estadísticas del mercado:
+```
+📊 Market Stats
+   📦 Total jobs: 45
+   🔥 Top technologies: .net, angular, typescript, azure, postgresql
+   🌍 Remote: 78% | Hybrid: 15% | On-site: 7%
+   📰 Sources: remoteok: 20, linkedin: 15, weremote: 10
+```
+
 ## 🔒 Privacidad
 
-- `profile.yaml` y `config.yaml` están en `.gitignore`
+- `profile.yaml`, `profile-*.yaml` y `config.yaml` están en `.gitignore`
 - `output/` con resultados está en `.gitignore`
 - Solo los templates y scripts se comparten en el repo público

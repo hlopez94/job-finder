@@ -1,9 +1,12 @@
 # ── Datos personales ──
 profile.yaml
+profile-*.yaml        # multi-profile (pero NO los .template.yaml)
+!profile-*.template.yaml
 config.yaml
 
 # ── Resultados de ejecución ──
 output/
+output/.company_cache/
 
 # ── Python ──
 __pycache__/

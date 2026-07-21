@@ -51,9 +51,46 @@ Esto da una bonificación a jobs que requieren stacks que el usuario ya usó pro
 
 *GitHub Issues descartado por baja calidad de datos.*
 
+## Features Adicionales (V2)
+
+### Multi-Perfil
+Soporte para múltiples perfiles via flag `--profile`:
+```bash
+python scripts/fetch-all.py                    # → profile.yaml
+python scripts/fetch-all.py --profile senior   # → profile-senior.yaml
+python scripts/fetch-all.py --profile freelance # → profile-freelance.yaml
+```
+
+Cada perfil puede tener distinto `salary_mode`, `weighting` y `preferences`.
+
+### Deduplicación
+Deduplicación inteligente por título normalizado + empresa. Usa `SequenceMatcher` para detectar variaciones textuales (ej: "Senior .NET Developer" ≈ ".NET Developer Senior").
+
+### Auto-Cleanup
+Limpieza automática de resultados anteriores a 15 días al inicio de cada ejecución.
+
+### Terminal Table
+Tabla estilizada con `rich` (colores, scores, indicadores de salario). Modo fallback si rich no está instalado.
+
+### Company Research + Interview Prep
+Comando `--research <url>` que investiga una empresa y genera tips de entrevista basados en el stack del puesto. Cachea resultados por 7 días.
+
+### Market Stats
+Análisis del mercado al final de cada run:
+- Tecnologías más demandadas
+- Distribución remote/hybrid/onsite
+- Empresas que más contratan
+- Distribución por fuente
+
+### LinkedIn Cookie Renewal
+Skill `renovar-linkedin-cookie.md` que guía al usuario para renovar la cookie `li_at` de LinkedIn usando Browser MCP (DevTools).
+
 ## Consecuencias
 - **Positivo**: Feedback permite refinar rankings sin ML complejo
 - **Positivo**: `generar-perfil` reduce fricción de onboarding
 - **Positivo**: Experience history da matches más relevantes
-- **Negativo**: LinkedIn scraping requiere cookie que expira
+- **Positivo**: Multi-perfil permite buscar full-time y freelance sin conflictos
+- **Positivo**: Market stats dan visibilidad del mercado actual
+- **Positivo**: Company research + interview prep ahorran horas de preparación
+- **Negativo**: LinkedIn scraping requiere cookie que expira (mitigado con skill renovar)
 - **Negativo**: StackOverflow scraping puede romperse si cambian HTML

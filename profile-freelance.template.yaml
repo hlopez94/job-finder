@@ -1,0 +1,46 @@
+# ============================================================================
+# Job Finder — Perfil Freelance / Contracting (Template)
+# ============================================================================
+# Perfil alternativo para buscar trabajos freelance o contratos.
+# Usar: python scripts/fetch-all.py --profile freelance
+# ============================================================================
+
+profile:
+  name: "Tu Nombre (Freelance)"
+  github_handle: "tu-github-user"
+  description: "Freelance .NET/Angular contractor"
+
+  preferred_stack:
+    languages: [".NET", "C#", "TypeScript", "Python"]
+    frameworks: ["Angular", "ASP.NET Core", "Blazor"]
+    databases: ["PostgreSQL", "SQL Server"]
+    cloud: ["Azure", "AWS"]
+    tools: ["Docker", "Kubernetes"]
+
+  experience:
+    level: "Senior"
+    years: 8
+
+  experience_history:
+    - role: "Senior Software Engineer"
+      company: "BEON.Tech"
+      years: "2021-presente"
+      stack: [".NET", "Angular", "Azure", "TypeScript", "PostgreSQL"]
+      description: "Desarrollo SaaS multi-tenant"
+
+  preferences:
+    remote_only: true
+    salary_mode: "hourly"              # 💡 Freelance = tarifa por hora
+    min_salary: 30                     # USD 30/hr mínimo
+    max_salary: 65                     # USD 65/hr máximo
+    preferred_locations: ["Remote"]
+    exclude_keywords: ["relocation", "visa", "C2C", "corp-to-corp", "blockchain"]
+    max_applications_per_run: 15
+
+  weighting:
+    stack_match: 0.35
+    experience_match: 0.15
+    seniority_match: 0.10             # menos peso (freelance valora más skills que seniority)
+    salary_match: 0.20                # más peso al salario
+    remote_match: 0.10
+    recency: 0.10

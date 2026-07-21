@@ -1,0 +1,47 @@
+# ============================================================================
+# Job Finder — Perfil Senior Full-Time (Template)
+# ============================================================================
+# Perfil para búsqueda de posiciones Senior full-time.
+# Usar: python scripts/fetch-all.py --profile senior
+# ============================================================================
+
+profile:
+  name: "Tu Nombre (Senior FT)"
+  github_handle: "tu-github-user"
+  description: "Senior .NET/Angular Software Engineer"
+
+  preferred_stack:
+    languages: [".NET", "C#", "TypeScript", "Python"]
+    frameworks: ["Angular", "ASP.NET Core", "Blazor", "SignalR"]
+    databases: ["PostgreSQL", "SQL Server", "Redis"]
+    cloud: ["Azure", "AWS"]
+    tools: ["Docker", "Kubernetes", "GitHub Actions", "Terraform"]
+    methodologies: ["Clean Architecture", "DDD", "CQRS", "Event-Driven"]
+
+  experience:
+    level: "Senior"
+    years: 8
+
+  experience_history:
+    - role: "Senior Software Engineer"
+      company: "BEON.Tech"
+      years: "2021-presente"
+      stack: [".NET", "Angular", "Azure", "TypeScript", "PostgreSQL"]
+      description: "Desarrollo SaaS multi-tenant con Clean Architecture y DDD"
+
+  preferences:
+    remote_only: true
+    salary_mode: "annually"            # 💡 Full-time = salario anual
+    min_salary: 90000
+    max_salary: 160000
+    preferred_locations: ["Remote", "United States", "Europe"]
+    exclude_keywords: ["blockchain", "crypto", "WordPress", "PHP", "junior"]
+    max_applications_per_run: 10
+
+  weighting:
+    stack_match: 0.35
+    experience_match: 0.15
+    seniority_match: 0.15
+    salary_match: 0.15
+    remote_match: 0.10
+    recency: 0.10

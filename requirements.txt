@@ -14,6 +14,9 @@ python-telegram-bot>=20.7
 # URL parsing
 urllib3>=2.0.0
 
+# Terminal UI
+rich>=13.7.0
+
 # Development
 pytest>=8.0.0
 pytest-mock>=3.12.0
