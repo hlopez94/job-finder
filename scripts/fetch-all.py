@@ -19,6 +19,15 @@ Requiere:
 
 import sys
 import os
+
+# Force UTF-8 on Windows (cp1252) to prevent UnicodeEncodeError with emoji
+if sys.platform == "win32":
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        os.environ["PYTHONIOENCODING"] = "utf-8"
+
 import yaml
 import json
 import argparse
@@ -28,7 +37,7 @@ from pathlib import Path
 # Asegurar que podemos importar los módulos locales
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-# ── Imports de módulos locales ──
+# -- Imports de módulos locales --
 from scripts.sources.weremote import fetch_weworkremotely_jobs
 from scripts.sources.remoteok import fetch_remoteok_jobs
 from scripts.ranker import rank_jobs
@@ -91,14 +100,16 @@ def print_horizontal_rule():
     """Imprime una línea horizontal en la terminal."""
     try:
         from rich.console import Console
-        console = Console()
+        import sys
+        # Redirect to stdout with ASCII encoding
+        console = Console(file=sys.stdout, force_terminal=True)
         console.rule(style="blue")
-    except ImportError:
-        print("─" * 60)
+    except Exception:
+        print("-" * 60)
 
 
 def main():
-    parser = argparse.ArgumentParser(description="🎯 Job Finder — Buscador inteligente de ofertas")
+    parser = argparse.ArgumentParser(description="[TARGET] Job Finder — Buscador inteligente de ofertas")
     parser.add_argument("--profile", default="profile",
                         help="Nombre del perfil (default: 'profile' → profile.yaml, 'senior' → profile-senior.yaml)")
     parser.add_argument("--no-telegram", action="store_true", help="Skip notificación Telegram")
@@ -111,20 +122,20 @@ def main():
     args = parser.parse_args()
 
     print("=" * 60)
-    print(f"  🎯 Job Finder")
+    print(f"  Job Finder")
     print(f"  Perfil: {args.profile}")
     print("=" * 60)
 
-    # ── 0. Cleanup automático (15 días) ──
+    # -- 0. Cleanup automático (15 días) --
     if not args.no_cleanup:
-        print("🧹 Limpieza automática (> 15 días)...")
+        print("Limpiza automatica (> 15 dias)...")
         removed = cleanup_old_runs(max_days=15)
         if removed:
-            print(f"   ✅ {len(removed)} ejecuciones antiguas eliminadas")
+            print(f"   OK {len(removed)} ejecuciones antiguas eliminadas")
         print()
 
-    # ── 1. Cargar configuración ──
-    print("📄 Cargando perfil y configuración...")
+    # -- 1. Cargar configuración --
+    print("Cargando perfil y configuracion...")
     profile, config, profile_filename = load_config(args.profile)
     p = profile.get("profile", {})
     print(f"   Perfil: {p.get('name', 'N/A')} ({profile_filename})")
@@ -140,85 +151,96 @@ def main():
 
     all_jobs = []
 
-    # ── 2. Fetch de cada fuente ──
-    print("🔍 Buscando ofertas...")
+    # -- 2. Fetch de cada fuente --
+    print("[SEARCH] Buscando ofertas...")
     print()
 
     # 2a. WeWorkRemotely
-    print("   ├── WeWorkRemotely...")
+    print("   +-- WeWorkRemotely...")
     try:
         weremote_jobs = fetch_weworkremotely_jobs(config, profile)
-        print(f"   │   ✅ {len(weremote_jobs)} ofertas encontradas")
+        print(f"   |   [OK] {len(weremote_jobs)} ofertas encontradas")
         all_jobs.extend(weremote_jobs)
     except Exception as e:
-        print(f"   │   ⚠️ Error: {e}")
+        print(f"   |   [WARNING] Error: {e}")
 
     # 2b. RemoteOK
-    print("   ├── RemoteOK...")
+    print("   +-- RemoteOK...")
     try:
         remoteok_jobs = fetch_remoteok_jobs(config, profile)
-        print(f"   │   ✅ {len(remoteok_jobs)} ofertas encontradas")
+        print(f"   |   [OK] {len(remoteok_jobs)} ofertas encontradas")
         all_jobs.extend(remoteok_jobs)
     except Exception as e:
-        print(f"   │   ⚠️ Error: {e}")
+        print(f"   |   [WARNING] Error: {e}")
 
     # 2c. LinkedIn (via Guest Jobs API — no auth needed)
-    print("   ├── LinkedIn...")
+    print("   +-- LinkedIn...")
     try:
         from scripts.sources.linkedin import fetch_linkedin_jobs
         linkedin_jobs = fetch_linkedin_jobs(config, profile)
-        print(f"   │   ✅ {len(linkedin_jobs)} ofertas encontradas")
+        print(f"   |   [OK] {len(linkedin_jobs)} ofertas encontradas")
         all_jobs.extend(linkedin_jobs)
     except Exception as e:
-        print(f"   │   ⚠️ Error: {e}")
+        print(f"   |   [WARNING] Error: {e}")
 
     print()
-    print(f"📊 Total pre-dedup: {len(all_jobs)} ofertas")
+    print(f"[CHART] Total pre-dedup: {len(all_jobs)} ofertas")
     print()
 
     if not all_jobs:
-        print("😴 No se encontraron ofertas. Probá ajustar los filtros.")
+        print("[SLEEP] No se encontraron ofertas. Probá ajustar los filtros.")
         sys.exit(0)
 
-    # ── 3. Deduplicación ──
-    print("🔍 Deduplicando...")
+    # -- 3. Deduplicación --
+    print("[SEARCH] Deduplicando...")
     deduped = deduplicate(all_jobs)
     duplicates = len(all_jobs) - len(deduped)
     if duplicates > 0:
-        print(f"   ✅ {duplicates} duplicados eliminados")
-    print(f"   📦 {len(deduped)} ofertas únicas")
+        print(f"   [OK] {duplicates} duplicados eliminados")
+    print(f"   [PACKAGE] {len(deduped)} ofertas únicas")
     print()
 
-    # ── 4. Ranking ──
-    print("🏆 Rankeando ofertas...")
+    # -- 4. Ranking --
+    print("[TROPHY] Rankeando ofertas...")
     ranked = rank_jobs(deduped, profile)
     show_top = config.get("ranking", {}).get("show_top", 10)
     top_jobs = ranked[:show_top]
     print(f"   Top {len(top_jobs)} ofertas seleccionadas")
     print()
 
-    # ── 5. Tabla en terminal ──
+    # -- 5. Geo-Filter (LATAM compatibility) --
+    print("[GLOBE] Aplicando geo-filtro (LATAM)...")
+    try:
+        from scripts.geo_filter import geo_filter_jobs
+        top_jobs, geo_stats = geo_filter_jobs(top_jobs)
+        print(f"   [OK] {len(top_jobs)} ofertas compatibles con LATAM")
+        print(f"   [CHART] Filtrados: {geo_stats['us_only']} US-only, {geo_stats['other']} otras regiones")
+    except Exception as e:
+        print(f"   [WARNING] Error en geo-filter: {e}")
+    print()
+
+    # -- 6. Tabla en terminal --
     if not args.no_table:
         try:
             from scripts.table_output import print_jobs_table, print_stats
             print_jobs_table(ranked[:show_top],
-                             title=f"🏆 Top {show_top} — {p.get('name', 'Job Finder')}")
+                             title=f"[TROPHY] Top {show_top} — {p.get('name', 'Job Finder')}")
         except ImportError:
             pass  # rich no instalado, no mostrar tabla
 
     print_horizontal_rule()
 
-    # ── 6. Market Stats ──
-    print("📊 Generando estadísticas de mercado...")
+    # -- 6. Market Stats --
+    print("[CHART] Generando estadísticas de mercado...")
     stats = compute_stats(ranked)
     try:
         from scripts.table_output import print_stats as print_stats_table
         print_stats_table(stats)
     except ImportError:
-        print(f"   📦 Total: {stats['total']} jobs")
+        print(f"   [PACKAGE] Total: {stats['total']} jobs")
     print()
 
-    # ── 7. Guardar resultados ──
+    # -- 7. Guardar resultados --
     print("💾 Guardando resultados...")
 
     json_path = run_dir / "results.json"
@@ -255,16 +277,16 @@ def main():
 
     # Markdown
     with open(md_path, "w", encoding="utf-8") as f:
-        f.write(f"# 🎯 Job Finder — {run_date}\n\n")
+        f.write(f"# [TARGET] Job Finder — {run_date}\n\n")
         f.write(f"**Perfil:** {p.get('name', 'N/A')} ({profile_filename})\n\n")
         f.write(f"**Total ofertas encontradas:** {len(all_jobs)}\n")
         f.write(f"**Duplicados eliminados:** {duplicates}\n")
         f.write(f"**Rankeadas:** {len(ranked)}\n\n")
 
-        f.write("---\n\n## 🏆 Top Matches\n\n")
+        f.write("---\n\n## [TROPHY] Top Matches\n\n")
         for i, job in enumerate(top_jobs):
             score = job.get("_score", 0)
-            f.write(f"### {i+1}. {job.get('title', 'N/A')} — 🎯 {score:.0f}/100\n\n")
+            f.write(f"### {i+1}. {job.get('title', 'N/A')} — [TARGET] {score:.0f}/100\n\n")
             f.write("| Campo | Valor |\n|---|---|\n")
             f.write(f"| **Empresa** | {job.get('company', 'N/A')} |\n")
             f.write(f"| **Salario** | {job.get('salary', 'N/A')} |\n")
@@ -277,44 +299,44 @@ def main():
             f.write(f"\n{job.get('description', '')[:400]}...\n\n---\n\n")
 
         # Incluir market stats
-        f.write("\n## 📊 Market Stats\n\n")
+        f.write("\n## [CHART] Market Stats\n\n")
         f.write(format_stats_report(stats))
 
     # Market stats report
     with open(stats_path, "w", encoding="utf-8") as f:
         f.write(format_stats_report(stats))
 
-    print(f"   📄 {json_path}")
-    print(f"   📄 {md_path}")
-    print(f"   📄 {stats_path}")
+    print(f"   [DOC] {json_path}")
+    print(f"   [DOC] {md_path}")
+    print(f"   [DOC] {stats_path}")
     print()
 
-    # ── 8. Notificar por Telegram ──
+    # -- 8. Notificar por Telegram --
     if not args.no_telegram:
         telegram = config.get("telegram", {})
         if telegram.get("bot_token") and telegram.get("chat_id"):
-            print("📱 Enviando notificación Telegram...")
+            print("[PHONE] Enviando notificación Telegram...")
             try:
                 send_telegram_notification(top_jobs, config, profile, run_date)
-                print("   ✅ Notificación enviada")
+                print("   [OK] Notificación enviada")
             except Exception as e:
-                print(f"   ⚠️ Error al enviar Telegram: {e}")
+                print(f"   [WARNING] Error al enviar Telegram: {e}")
         else:
-            print("📱 Telegram no configurado. Skipping notificación.")
+            print("[PHONE] Telegram no configurado. Skipping notificación.")
     else:
-        print("📱 Telegram omitido (--no-telegram)")
+        print("[PHONE] Telegram omitido (--no-telegram)")
 
-    # ── 9. Tips post-ejecución ──
+    # -- 9. Tips post-ejecución --
     print()
-    print("💡 Tips:")
+    print("[LIGHTBULB] Tips:")
     print("   • Ver feedback:  python scripts/feedback.py --list")
     print("   • Investigar empresa:  python scripts/feedback.py --research <url>")
     print("   • Multi-perfil:  python scripts/fetch-all.py --profile freelance")
 
     print()
     print("=" * 60)
-    print("  ✅ Job Finder — Completado")
-    print(f"  📁 Resultados: {run_dir}")
+    print("  [OK] Job Finder — Completado")
+    print(f"  [FOLDER] Resultados: {run_dir}")
     print("=" * 60)
 
 

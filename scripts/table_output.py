@@ -3,7 +3,7 @@
 Terminal Table Output
 =======================
 Renderiza resultados de jobs en una tabla estilizada en la terminal
-usando la librería Rich.
+usando la libreria Rich.
 """
 
 try:
@@ -24,7 +24,7 @@ import json
 console = Console()
 
 
-def print_jobs_table(jobs: list[dict], title: str = "🏆 Top Matches"):
+def print_jobs_table(jobs: list[dict], title: str = "Top Matches"):
     """
     Imprime una tabla estilizada con los jobs rankeados.
 
@@ -98,11 +98,11 @@ def _format_salary_display(salary: str) -> str:
 
     salary_lower = salary.lower()
     if any(kw in salary_lower for kw in ["/hr", "/hour", "hourly", "per hour", "por hora"]):
-        return f"[cyan]{salary}[/cyan] ⏱️"
+        return f"[cyan]{salary}[/cyan] [hourly]"
     elif any(kw in salary_lower for kw in ["/month", "/mo", "monthly", "/mes", "mensual"]):
-        return f"[cyan]{salary}[/cyan] 📅"
+        return f"[cyan]{salary}[/cyan] [monthly]"
     elif any(kw in salary_lower for kw in ["/year", "/yr", "annually", "/año", "anual"]):
-        return f"[cyan]{salary}[/cyan] 📆"
+        return f"[cyan]{salary}[/cyan] [yearly]"
 
     return salary
 
@@ -118,19 +118,19 @@ def print_job_detail(job: dict):
 
     detail = (
         f"[bold]{job.get('title', 'N/A')}[/bold]\n"
-        f"[yellow]🏢 {job.get('company', 'N/A')}[/yellow]\n"
-        f"[{score_color}]🎯 Score: {score:.1f}/100[/{score_color}]\n"
-        f"[green]💰 {_format_salary_display(job.get('salary', 'N/A'))}[/green]\n"
-        f"[blue]📍 {job.get('remote', 'N/A')} | {job.get('location', 'N/A')}[/blue]\n"
-        f"[dim]🔗 {job.get('url', '#')}[/dim]\n"
-        f"[dim]📰 {job.get('source', '?')}[/dim]\n"
+        f"[yellow][company] {job.get('company', 'N/A')}[/yellow]\n"
+        f"[{score_color}][score] {score:.1f}/100[/{score_color}]\n"
+        f"[green][salary] {_format_salary_display(job.get('salary', 'N/A'))}[/green]\n"
+        f"[blue][location] {job.get('remote', 'N/A')} | {job.get('location', 'N/A')}[/blue]\n"
+        f"[dim][link] {job.get('url', '#')}[/dim]\n"
+        f"[dim][source] {job.get('source', '?')}[/dim]\n"
     )
 
     if job.get("description"):
         desc = job["description"][:500]
         detail += f"\n[italic]{desc}[/italic]"
 
-    console.print(Panel(detail, title="📋 Job Detail", border_style="cyan"))
+    console.print(Panel(detail, title="Job Detail", border_style="cyan"))
 
 
 def print_stats(stats: dict):
@@ -139,15 +139,15 @@ def print_stats(stats: dict):
         print(json.dumps(stats, indent=2, ensure_ascii=False))
         return
 
-    console.print(f"\n[bold cyan]📊 Market Stats[/bold cyan]")
-    console.print(f"   📦 Total jobs: {stats.get('total', 0)}")
-    # top_technologies son dicts {tech, count} → extraer solo el nombre
+    console.print(f"\n[bold cyan]--- Market Stats ---[/bold cyan]")
+    console.print(f"   Total jobs: {stats.get('total', 0)}")
+    # top_technologies son dicts {tech, count} -> extraer solo el nombre
     raw_techs = stats.get('top_technologies', [])[:5]
     tech_names = [t["tech"] if isinstance(t, dict) else str(t) for t in raw_techs]
-    console.print(f"   🔥 Top technologies: {', '.join(tech_names)}")
+    console.print(f"   Top technologies: {', '.join(tech_names)}")
     rs = stats.get('remote_stats', {})
-    console.print(f"   🌍 Remote: {rs.get('remote_pct', 0):.0f}% | Hybrid: {rs.get('hybrid_pct', 0):.0f}% | On-site: {rs.get('onsite_pct', 0):.0f}%")
-    console.print(f"   📰 Sources: {', '.join(f'{k}: {v}' for k, v in stats.get('sources', {}).items())}")
+    console.print(f"   Remote: {rs.get('remote_pct', 0):.0f}% | Hybrid: {rs.get('hybrid_pct', 0):.0f}% | On-site: {rs.get('onsite_pct', 0):.0f}%")
+    console.print(f"   Sources: {', '.join(f'{k}: {v}' for k, v in stats.get('sources', {}).items())}")
 
 
 def print_progress():
