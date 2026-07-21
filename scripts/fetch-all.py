@@ -31,7 +31,6 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 # ── Imports de módulos locales ──
 from scripts.sources.weremote import fetch_weworkremotely_jobs
 from scripts.sources.remoteok import fetch_remoteok_jobs
-from scripts.sources.stackoverflow import fetch_stackoverflow_jobs
 from scripts.ranker import rank_jobs
 from scripts.notify import send_telegram_notification
 from scripts.dedup import deduplicate
@@ -40,33 +39,6 @@ from scripts.market_stats import compute_stats, format_stats_report
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
 OUTPUT_DIR = ROOT_DIR / "output"
-
-
-def detect_linkedin_cookie_health(config: dict) -> bool:
-    """
-    Verifica si la cookie de LinkedIn (li_at) está configurada.
-    Se lee de la variable de entorno LINKEDIN_LI_AT_COOKIE o de .env.local
-    """
-    # 1. Variable de entorno directa
-    env_cookie = os.environ.get("LINKEDIN_LI_AT_COOKIE", "")
-    if env_cookie:
-        return True
-
-    # 2. Intentar leer de .env.local
-    env_file = ROOT_DIR / ".env.local"
-    if env_file.exists():
-        try:
-            with open(env_file, "r", encoding="utf-8") as f:
-                for line in f:
-                    if line.startswith("LINKEDIN_LI_AT_COOKIE="):
-                        value = line.split("=", 1)[1].strip()
-                        if value:
-                            os.environ["LINKEDIN_LI_AT_COOKIE"] = value
-                            return True
-        except Exception:
-            pass
-
-    return False
 
 
 def load_config(profile_name: str = "profile"):
@@ -190,27 +162,15 @@ def main():
     except Exception as e:
         print(f"   │   ⚠️ Error: {e}")
 
-    # 2c. StackOverflow Jobs
-    print("   ├── StackOverflow Jobs...")
+    # 2c. LinkedIn (via Guest Jobs API — no auth needed)
+    print("   ├── LinkedIn...")
     try:
-        so_jobs = fetch_stackoverflow_jobs(config, profile)
-        print(f"   │   ✅ {len(so_jobs)} ofertas encontradas")
-        all_jobs.extend(so_jobs)
+        from scripts.sources.linkedin import fetch_linkedin_jobs
+        linkedin_jobs = fetch_linkedin_jobs(config, profile)
+        print(f"   │   ✅ {len(linkedin_jobs)} ofertas encontradas")
+        all_jobs.extend(linkedin_jobs)
     except Exception as e:
         print(f"   │   ⚠️ Error: {e}")
-
-    # 2d. LinkedIn (via MCP)
-    print("   └── LinkedIn (via MCP)...")
-    if detect_linkedin_cookie_health(config):
-        try:
-            from scripts.sources.linkedin import fetch_linkedin_jobs
-            linkedin_jobs = fetch_linkedin_jobs(config, profile)
-            print(f"       ✅ {len(linkedin_jobs)} ofertas encontradas")
-            all_jobs.extend(linkedin_jobs)
-        except Exception as e:
-            print(f"       ⚠️ Error: {e}")
-    else:
-        print(f"       ⚠️ LinkedIn no configurado. Usá la skill 'renovar-linkedin-cookie'")
 
     print()
     print(f"📊 Total pre-dedup: {len(all_jobs)} ofertas")

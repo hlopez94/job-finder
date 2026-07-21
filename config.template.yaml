@@ -5,20 +5,6 @@
 # config.yaml está en .gitignore para evitar commits accidentales.
 # ============================================================================
 
-# --- GitHub ---
-github:
-  token: "ghp_xxxxxxxxxxxxxxxxxxxx"     # Personal Access Token (classic)
-  # Scopes necesarios: repo, read:org (público es suficiente)
-  # Crear en: https://github.com/settings/tokens
-
-# --- LinkedIn Scraper MCP ---
-# Configuración para el MCP server linkedin-scraper
-linkedin:
-  email: "tu-email@example.com"
-  password: "tu-contraseña"            # considerar usar variables de entorno
-  search_keywords: [".NET", "Angular", "Senior", "Remote"]
-  locations: ["Worldwide", "United States", "Europe"]
-
 # --- Telegram ---
 telegram:
   bot_token: "123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11"
@@ -34,6 +20,14 @@ weworkremotely:
   # Nota: los feeds se auto-configuran en el scraper con las URLs válidas actuales:
   #   - remote-jobs.rss (general)
   #   - categories/remote-programming-jobs.rss (programación)
+
+# --- LinkedIn ---
+# LinkedIn usa la Guest Jobs API (no requiere autenticación).
+# Opcionalmente podés configurar tu cookie li_at para resultados personalizados.
+linkedin:
+  enabled: true
+  # search_keywords: [".NET", "Angular", "Senior", "Remote"]  # override del perfil
+  # li_at_cookie: ""  # opcional: tu cookie li_at para resultados autenticados
 
 # --- Ranking Thresholds ---
 ranking:
