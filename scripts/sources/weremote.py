@@ -14,8 +14,12 @@ def fetch_weworkremotely_jobs(config: dict, profile: dict) -> list[dict]:
     """
     Busca ofertas en WeWorkRemotely vía RSS.
 
+    Nota: WeWorkRemotely reestructuró sus feeds. Las URLs válidas actuales:
+      - https://weworkremotely.com/remote-jobs.rss (general, ~98 jobs)
+      - https://weworkremotely.com/categories/remote-programming-jobs.rss (~25 jobs)
+
     Args:
-        config: Config del usuario (weworkremotely.categories)
+        config: Config del usuario (general.lookback_days)
         profile: Perfil del usuario
 
     Returns:
@@ -26,21 +30,26 @@ def fetch_weworkremotely_jobs(config: dict, profile: dict) -> list[dict]:
         print("   │   ⚠️ WeWorkRemotely deshabilitado en config")
         return []
 
-    categories = wwr_config.get("categories", ["software-dev"])
     lookback_days = config.get("general", {}).get("lookback_days", 30)
     since_date = datetime.now() - timedelta(days=lookback_days)
+
+    # Feeds válidos (actualizado 2026-07)
+    feed_urls = [
+        "https://weworkremotely.com/categories/remote-programming-jobs.rss",
+        "https://weworkremotely.com/remote-jobs.rss",
+    ]
 
     all_jobs = []
     seen_urls = set()
 
-    for category in categories:
-        feed_url = f"https://weworkremotely.com/categories/{category}/jobs.rss"
+    for feed_url in feed_urls:
         try:
             feed = feedparser.parse(feed_url)
         except Exception as e:
-            print(f"   │   ⚠️ Error fetching RSS for '{category}': {e}")
+            print(f"   │   ⚠️ Error fetching RSS '{feed_url}': {e}")
             continue
 
+        category = "programming" if "programming" in feed_url else "general"
         for entry in feed.get("entries", []):
             published = entry.get("published_parsed") or entry.get("updated_parsed")
             if published:

@@ -133,18 +133,62 @@ def _score_experience_match(job: dict, experience_history: list) -> float:
         return 30.0
 
 
+# Tecnologías "core" que en el TÍTULO de un job indican fuertemente el rol
+CORE_TECHS = {
+    ".net", "c#", "csharp", "dotnet", "asp.net", "blazor",
+    "angular", "react", "vue", "svelte", "node", "nodejs",
+    "typescript", "javascript",
+    "python", "java", "go", "golang", "rust", "c++", "php", "ruby",
+}
+
+
 def _score_stack_match(job: dict, tech_set: set) -> float:
-    """Calcula qué tanto del stack del job matchea con el perfil."""
-    text = (job.get("title", "") + " " + job.get("description", "")).lower()
+    """
+    Calcula qué tanto del stack del job matchea con el perfil.
 
-    matches = sum(1 for tech in tech_set if tech.lower() in text)
+    Lógica:
+      - Si una tecnología CORE del usuario aparece en el TÍTULO → señal muy fuerte (70-100)
+      - Si solo aparece en descripción/tags → señal moderada (cap 60)
+      - Bonus por densidad de tecnologías complementarias
+    """
+    title = job.get("title", "").lower()
+    desc_tags = (
+        job.get("description", "") + " " +
+        " ".join(str(t) for t in job.get("tags", []))
+    ).lower()
+    full_text = title + " " + desc_tags
+
     total_techs = len(tech_set)
-
     if total_techs == 0:
         return 50.0  # neutro si no hay stack definido
 
-    ratio = matches / total_techs
-    return min(100.0, ratio * 150)  # bonificación si matchea mucho
+    # Tecnologías del usuario que son "core" (indicadoras de rol)
+    user_core = [t for t in tech_set if t in CORE_TECHS]
+
+    # Hits en título (señal fuerte)
+    title_core_hits = sum(1 for t in user_core if t in title)
+    # Hits totales (para densidad)
+    all_hits = sum(1 for t in tech_set if t in full_text)
+
+    # ── Caso 1: 2+ core techs en título → match casi perfecto ──
+    if title_core_hits >= 2:
+        return 100.0
+
+    # ── Caso 2: 1 core tech en título → muy buen match ──
+    if title_core_hits == 1:
+        # Base 70 + bonus por tecnologías complementarias encontradas
+        return min(96.0, 70.0 + all_hits * 3.0)
+
+    # ── Caso 3: sin core tech en título → depende de densidad en desc/tags ──
+    # Ej: un job "Backend Engineer" que menciona .NET y C# en la descripción
+    desc_core_hits = sum(1 for t in user_core if t in desc_tags)
+    if desc_core_hits >= 2:
+        # El rol es claramente del stack del usuario aunque el título sea genérico
+        return min(70.0, 45.0 + all_hits * 2.0)
+
+    # Sin señal clara: score bajo proporcional a densidad
+    ratio = all_hits / total_techs
+    return min(50.0, ratio * 120.0)
 
 
 def _score_seniority(job: dict, experience: dict) -> float:
@@ -331,15 +375,33 @@ def _score_recency(job: dict) -> float:
     if not posted:
         return 50.0
 
+    pub_date = None
     try:
-        if "T" in posted:
-            pub_date = datetime.fromisoformat(posted.split(".")[0])
+        # Normalizar el string: manejar ISO con timezone (ej: 2026-07-20T10:30:00+00:00)
+        clean = posted.strip()
+        # Quitar timezone al final (+00:00, Z, -05:00, etc.)
+        clean = re.sub(r"(Z|[+-]\d{2}:?\d{2})$", "", clean)
+        # Quitar microsegundos
+        clean = clean.split(".")[0]
+
+        if "T" in clean:
+            pub_date = datetime.fromisoformat(clean)
         else:
-            pub_date = datetime.strptime(posted[:10], "%Y-%m-%d")
-    except (ValueError, IndexError):
+            pub_date = datetime.strptime(clean[:10], "%Y-%m-%d")
+    except (ValueError, IndexError, TypeError):
         return 50.0
 
+    if pub_date is None:
+        return 50.0
+
+    # Asegurar que pub_date sea naive (sin timezone) para comparar con datetime.now()
+    if pub_date.tzinfo is not None:
+        pub_date = pub_date.replace(tzinfo=None)
+
     days_ago = (datetime.now() - pub_date).days
+    # Fechas futuras o parseo raro → score neutro-alto (probablemente reciente)
+    if days_ago < 0:
+        return 90.0
     if days_ago <= 3:
         return 100.0
     if days_ago <= 7:

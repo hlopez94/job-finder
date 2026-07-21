@@ -43,15 +43,30 @@ OUTPUT_DIR = ROOT_DIR / "output"
 
 
 def detect_linkedin_cookie_health(config: dict) -> bool:
-    """Verifica si la cookie de LinkedIn está configurada."""
-    linkedin = config.get("linkedin", {})
-    email = linkedin.get("email", "")
-    password = linkedin.get("password", "")
-    if not email or not password:
-        return False
-    # Verificar si el token de env está presente
+    """
+    Verifica si la cookie de LinkedIn (li_at) está configurada.
+    Se lee de la variable de entorno LINKEDIN_LI_AT_COOKIE o de .env.local
+    """
+    # 1. Variable de entorno directa
     env_cookie = os.environ.get("LINKEDIN_LI_AT_COOKIE", "")
-    return bool(env_cookie)
+    if env_cookie:
+        return True
+
+    # 2. Intentar leer de .env.local
+    env_file = ROOT_DIR / ".env.local"
+    if env_file.exists():
+        try:
+            with open(env_file, "r", encoding="utf-8") as f:
+                for line in f:
+                    if line.startswith("LINKEDIN_LI_AT_COOKIE="):
+                        value = line.split("=", 1)[1].strip()
+                        if value:
+                            os.environ["LINKEDIN_LI_AT_COOKIE"] = value
+                            return True
+        except Exception:
+            pass
+
+    return False
 
 
 def load_config(profile_name: str = "profile"):

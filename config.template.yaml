@@ -31,10 +31,9 @@ telegram:
 # --- WeWorkRemotely ---
 weworkremotely:
   enabled: true
-  categories:                          # categorías a trackear
-    - "software-dev"
-    - "full-stack"
-    - "devops-sysadmin"
+  # Nota: los feeds se auto-configuran en el scraper con las URLs válidas actuales:
+  #   - remote-jobs.rss (general)
+  #   - categories/remote-programming-jobs.rss (programación)
 
 # --- Ranking Thresholds ---
 ranking:

@@ -141,8 +141,12 @@ def print_stats(stats: dict):
 
     console.print(f"\n[bold cyan]📊 Market Stats[/bold cyan]")
     console.print(f"   📦 Total jobs: {stats.get('total', 0)}")
-    console.print(f"   🔥 Top technologies: {', '.join(stats.get('top_technologies', [])[:5])}")
-    console.print(f"   🌍 Remote: {stats.get('remote_pct', 0):.0f}% | Hybrid: {stats.get('hybrid_pct', 0):.0f}% | On-site: {stats.get('onsite_pct', 0):.0f}%")
+    # top_technologies son dicts {tech, count} → extraer solo el nombre
+    raw_techs = stats.get('top_technologies', [])[:5]
+    tech_names = [t["tech"] if isinstance(t, dict) else str(t) for t in raw_techs]
+    console.print(f"   🔥 Top technologies: {', '.join(tech_names)}")
+    rs = stats.get('remote_stats', {})
+    console.print(f"   🌍 Remote: {rs.get('remote_pct', 0):.0f}% | Hybrid: {rs.get('hybrid_pct', 0):.0f}% | On-site: {rs.get('onsite_pct', 0):.0f}%")
     console.print(f"   📰 Sources: {', '.join(f'{k}: {v}' for k, v in stats.get('sources', {}).items())}")
 
 
