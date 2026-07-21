@@ -1,12 +1,15 @@
 # ── Datos personales ──
 profile.yaml
-profile-*.yaml        # multi-profile (pero NO los .template.yaml)
-!profile-*.template.yaml
 config.yaml
+
+# ── Multi-perfil (datos reales) ──
+# Los archivos profile-*.yaml con datos reales NO se trackean.
+# Los templates profile-*.template.yaml SÍ se trackean.
+profile-*.yaml
+!profile-*.template.yaml
 
 # ── Resultados de ejecución ──
 output/
-output/.company_cache/
 
 # ── Python ──
 __pycache__/

@@ -19,6 +19,11 @@
         "LINKEDIN_COOKIE": "${LINKEDIN_LI_AT_COOKIE}"
       },
       "description": "LinkedIn Scraper MCP — Busca ofertas de trabajo y extrae perfiles de LinkedIn"
+    },
+    "markitdown": {
+      "command": "markitdown-mcp",
+      "args": [],
+      "description": "MarkItDown MCP — Convierte documentos (PDF, Word, Excel, imágenes, etc.) a Markdown. Requiere: pip install markitdown-mcp"
     }
   }
 }

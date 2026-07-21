@@ -8,6 +8,7 @@ Este documento explica cómo configurar los MCP servers necesarios para el proye
 |---|---|---|
 | **MCPVault (Obsidian)** | Acceso al vault de documentación | `@bitbonsai/mcpvault@latest` |
 | **LinkedIn Scraper** | Búsqueda de ofertas en LinkedIn | `@stickerdaniel/linkedin-mcp-server` |
+| **MarkItDown** | Convertir PDF/Word/Excel a Markdown | `markitdown-mcp` (pip) |
 
 ---
 
@@ -109,7 +110,67 @@ npx @stickerdaniel/linkedin-mcp-server --help
 
 ---
 
-## 3️⃣ Configurar secrets en Docker MCP (si usás Docker)
+## 3️⃣ MarkItDown — Conversión de Documentos
+
+[MarkItDown MCP](https://github.com/microsoft/markitdown) convierte documentos (PDF, Word, Excel, PowerPoint, imágenes, audio, HTML, etc.) a Markdown. Es útil para el proyecto **Job Finder** cuando necesitás:
+
+- Leer un CV en PDF para generar tu `profile.yaml` (skill `generar-perfil`)
+- Procesar documentos adjuntos a ofertas de trabajo
+
+### Instalación
+
+Ya está en `requirements.txt`:
+```bash
+pip install markitdown-mcp
+```
+
+### Uso en OpenCode
+
+Config ya incluido en `opencode.json`:
+```json
+{
+  "mcpServers": {
+    "markitdown": {
+      "command": "markitdown-mcp",
+      "args": []
+    }
+  }
+}
+```
+
+### Verificar instalación
+```bash
+markitdown-mcp --help
+```
+
+### Herramienta expuesta
+
+El server expone una sola tool:
+- `convert_to_markdown(uri)` — donde `uri` puede ser `http:`, `https:`, `file:` o `data:`
+
+**Ejemplo de uso (en el agente):**
+```
+Convertí el CV en C:\Users\...\mi-cv.pdf a markdown
+→ usa convert_to_markdown con uri file:///C:/Users/.../mi-cv.pdf
+```
+
+### Alternativa: usar la librería directamente
+
+También podés usar `markitdown` como librería Python (sin MCP):
+```bash
+pip install 'markitdown[pdf]'
+```
+
+```python
+from markitdown import MarkItDown
+md = MarkItDown()
+result = md.convert("cv.pdf")
+print(result.text_content)
+```
+
+---
+
+## 4️⃣ Configurar secrets en Docker MCP (si usás Docker)
 
 ```bash
 # LinkedIn cookie

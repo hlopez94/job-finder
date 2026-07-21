@@ -17,6 +17,9 @@ urllib3>=2.0.0
 # Terminal UI
 rich>=13.7.0
 
+# Document conversion (MarkItDown MCP server + library)
+markitdown-mcp>=0.1.0
+
 # Development
 pytest>=8.0.0
 pytest-mock>=3.12.0
