@@ -78,7 +78,7 @@ def fetch_linkedin_jobs(config: dict, profile: dict) -> list[dict]:
 
     # Buscar con cada keyword principal
     # Usamos las 2-3 keywords más relevantes para no sobrecargar
-    search_terms = _build_search_terms(keywords, p)
+    search_terms = _build_search_terms(keywords, p, config)
 
     for term in search_terms:
         try:
@@ -100,27 +100,35 @@ def fetch_linkedin_jobs(config: dict, profile: dict) -> list[dict]:
     return unique
 
 
-def _build_search_terms(keywords: list, profile: dict) -> list[str]:
+def _build_search_terms(keywords: list, profile: dict, config: dict = None) -> list[str]:
     """
     Construye términos de búsqueda optimizados.
-    Combina tecnologías con seniority para mejores resultados.
+    Combina tecnologías con seniority + ubicación para mejores resultados.
     """
     seniority = profile.get("experience", {}).get("level", "Senior")
     terms = []
 
-    # Combinaciones clave: "Senior .NET Developer", "Senior Angular Developer"
+    # Ubicaciones objetivo (del config o default LATAM)
+    locations = []
+    if config:
+        locations = config.get("linkedin", {}).get("locations", [])
+    if not locations:
+        locations = ["LATAM", "Argentina", "South America", "Latin America", "Worldwide"]
+
+    # Combinaciones clave: "Senior .NET Developer Remote LATAM"
     core_techs = [k for k in keywords if k.lower() in {
         ".net", "c#", "angular", "blazor", "typescript", "react",
         "asp.net", "dotnet", "node", "python", "java"
     }]
 
     if core_techs:
-        # Buscar cada tech core con seniority
-        for tech in core_techs[:4]:  # máximo 4 búsquedas
-            terms.append(f"{seniority} {tech} Remote")
+        # Buscar cada tech core con seniority + cada ubicación
+        for tech in core_techs[:3]:  # máximo 3 techs
+            for loc in locations[:3]:  # máximo 3 ubicaciones
+                terms.append(f"{seniority} {tech} Remote {loc}")
     else:
-        # Fallback: usar las primeras keywords
-        terms.append(" ".join(keywords[:3]) + " Remote")
+        for loc in locations[:2]:
+            terms.append(" ".join(keywords[:3]) + f" Remote {loc}")
 
     return terms
 
