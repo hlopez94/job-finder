@@ -62,8 +62,9 @@ profile:
       description: "Desarrollo SaaS multi-tenant, Clean Architecture"
   preferences:
     remote_only: true
-    min_salary_usd: 80000
-    max_salary_usd: 150000
+    salary_mode: "annually"          # hourly | monthly | annually
+    min_salary: 80000
+    max_salary: 150000
     exclude_keywords: ["blockchain", "crypto"]
   weighting:
     stack_match: 0.35

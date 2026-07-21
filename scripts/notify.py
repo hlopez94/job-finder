@@ -89,9 +89,20 @@ def _build_message(top_jobs: list[dict], profile_name: str, run_date: str) -> st
         else:
             score_emoji = "📌"
 
+        # Detectar modo salarial para display
+        salary_display = salary
+        if salary and salary != "N/A":
+            salary_lower = salary.lower()
+            if any(kw in salary_lower for kw in ["/hr", "/hour", "hourly", "per hour", "por hora"]):
+                salary_display = f"{salary} ⏱️/hr"
+            elif any(kw in salary_lower for kw in ["/month", "/mo", "monthly", "/mes", "mensual"]):
+                salary_display = f"{salary} 📅/mes"
+            elif any(kw in salary_lower for kw in ["/year", "/yr", "annually", "/año", "anual"]):
+                salary_display = f"{salary} 📆/año"
+
         lines.append(f"{score_emoji} <b>{i}. {title}</b>")
         lines.append(f"   <b>🏢</b> {company}  |  <b>🎯</b> {score:.0f}/100")
-        lines.append(f"   {salary}  |  {remote}")
+        lines.append(f"   💰 {salary_display}  |  {remote}")
         if url:
             lines.append(f"   🔗 <a href='{url}'>Abrir oferta</a>")
         lines.append("")

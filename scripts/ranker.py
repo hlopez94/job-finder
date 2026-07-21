@@ -182,35 +182,130 @@ def _score_seniority(job: dict, experience: dict) -> float:
     return 20.0
 
 
+def _normalize_to_annual(value: float, mode: str) -> float:
+    """
+    Normaliza un valor salarial a su equivalente anual.
+
+    Modos soportados:
+      - "hourly":   asume 2080 hrs/año (40h/sem * 52 sem)
+      - "monthly":  multiplica por 12
+      - "annually": sin cambio
+    """
+    if mode == "hourly":
+        return value * 2080
+    elif mode == "monthly":
+        return value * 12
+    else:  # annually (default)
+        return value
+
+
+def _detect_salary_mode(text: str) -> str | None:
+    """
+    Detecta el modo salarial de una oferta de trabajo.
+
+    Returns: "hourly" | "monthly" | "annually" | None
+    """
+    text_lower = text.lower()
+
+    # Keywords de modo horario
+    if re.search(r"\b(?:per\s*hr|/hr|/hour|per\s*hour|hourly|por\s*hora)\b", text_lower):
+        return "hourly"
+
+    # Keywords de modo mensual
+    if re.search(r"\b(?:per\s*month|/month|/mo|monthly|por\s*m[ée]s|mensual|/mes)\b", text_lower):
+        return "monthly"
+
+    # Keywords de modo anual
+    if re.search(r"\b(?:per\s*(?:year|annum)|/year|/yr|annually|annual|por\s*a[ñn]o|/a[ñn]o)\b", text_lower):
+        return "annually"
+
+    return None
+
+
+def _parse_job_salary(salary_str: str) -> tuple:
+    """
+    Parsea el salario de un job y lo normaliza a anual.
+
+    Returns:
+        tuple: (job_min_annual, job_max_annual, salary_display)
+               donde salary_display es el string original para mostrar
+    """
+    if not salary_str or salary_str == "N/A":
+        return None, None, salary_str
+
+    text = salary_str
+
+    # Detectar modo del job
+    job_mode = _detect_salary_mode(text)
+
+    # Extraer valores numéricos
+    # Soporta: "30-45", "30-45/hr", "$30-$45/hour", "80k-150k", "$80k-$150k/yr"
+    ranges = re.findall(r"\$?\s*(\d{1,3}(?:,\d{3})*|\d+)(?:\s*[kK])?", text)
+
+    if len(ranges) >= 2:
+        # Limpiar comas y convertir
+        raw_min = float(ranges[0].replace(",", ""))
+        raw_max = float(ranges[1].replace(",", ""))
+
+        # Detectar si el texto original tiene 'k' o 'K'
+        has_k = "k" in text.lower()
+        if has_k:
+            raw_min *= 1000
+            raw_max *= 1000
+    elif len(ranges) == 1:
+        raw_min = raw_max = float(ranges[0].replace(",", ""))
+        has_k = "k" in text.lower()
+        if has_k:
+            raw_min *= 1000
+            raw_max *= 1000
+    else:
+        return None, None, salary_str
+
+    # Si no se pudo detectar el modo, asumir anual (default)
+    if not job_mode:
+        job_mode = "annually"
+
+    # Normalizar a anual
+    annual_min = _normalize_to_annual(raw_min, job_mode)
+    annual_max = _normalize_to_annual(raw_max, job_mode)
+
+    return annual_min, annual_max, salary_str
+
+
 def _score_salary(job: dict, preferences: dict) -> float:
-    """Evalúa si el salario está dentro del rango esperado."""
+    """
+    Evalúa si el salario está dentro del rango esperado,
+    soportando modos hourly/monthly/annually.
+
+    Normaliza todo a salario anual para comparar.
+    """
     salary_str = job.get("salary", "")
     if not salary_str or salary_str == "N/A":
         return 50.0  # neutro si no hay dato
 
-    min_salary = preferences.get("min_salary_usd", 0)
-    max_salary = preferences.get("max_salary_usd", 200000)
+    # Parsear preferencias del usuario
+    salary_mode = preferences.get("salary_mode", "annually")
+    user_min = preferences.get("min_salary", 0)
+    user_max = preferences.get("max_salary", 200000)
 
-    ranges = re.findall(r"\$?\s*(\d{2,3})[kK]?", salary_str)
-    if len(ranges) >= 2:
-        job_min = int(ranges[0]) * 1000
-        job_max = int(ranges[1]) * 1000
-    elif len(ranges) == 1:
-        job_min = job_max = int(ranges[0]) * 1000
-    else:
-        return 50.0
+    # Normalizar preferencias del usuario a anual
+    user_min_annual = _normalize_to_annual(user_min, salary_mode)
+    user_max_annual = _normalize_to_annual(user_max, salary_mode)
 
-    # Si el rango del job está dentro de la expectativa
-    if job_min >= min_salary and job_max <= max_salary:
-        return 100.0
-    # Si se solapa parcialmente
-    if job_max >= min_salary and job_min <= max_salary:
-        return 60.0
-    # Si está por debajo
-    if job_max < min_salary:
-        return 20.0
-    # Si está por encima
-    return 80.0
+    # Parsear y normalizar salario del job a anual
+    job_min_annual, job_max_annual, _ = _parse_job_salary(salary_str)
+
+    if job_min_annual is None:
+        return 50.0  # no se pudo parsear
+
+    # Comparar en base anual
+    if job_min_annual >= user_min_annual and job_max_annual <= user_max_annual:
+        return 100.0  # dentro del rango
+    if job_max_annual >= user_min_annual and job_min_annual <= user_max_annual:
+        return 60.0   # se solapa parcialmente
+    if job_max_annual < user_min_annual:
+        return 20.0   # está por debajo
+    return 80.0       # está por encima (mejor de lo esperado)
 
 
 def _score_remote(job: dict, preferences: dict) -> float:

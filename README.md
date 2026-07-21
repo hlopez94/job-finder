@@ -43,13 +43,28 @@ job-finder/
 
 Ver `profile.template.yaml` para el perfil y `config.template.yaml` para API keys.
 
+## 💰 Salary Mode
+
+Configurá el modo salarial que prefieras — soporta **hora**, **mensual** o **anual**:
+
+```yaml
+preferences:
+  salary_mode: "annually"   # "hourly" | "monthly" | "annually"
+  min_salary: 80000
+  max_salary: 150000
+```
+
+El motor de ranking normaliza automáticamente todos los salarios a base anual para comparar.
+Ej: `30-45/hr` → ~$62k-94k/año • `6000-10000/mes` → ~$72k-120k/año
+
 ## 📊 Ranking
 
 | Dimensión | Peso |
 |---|---|
-| Stack Match | 40% |
-| Seniority | 20% |
-| Salary | 20% |
+| Stack Match | 35% |
+| Experience Match | 15% |
+| Seniority | 15% |
+| Salary | 15% |
 | Remote | 10% |
 | Recency | 10% |
 

@@ -100,13 +100,15 @@ profile:
     years: 8
   preferences:
     remote_only: true
-    min_salary_usd: 80000
-    max_salary_usd: 150000
+    salary_mode: "annually"          # hourly | monthly | annually
+    min_salary: 80000
+    max_salary: 150000
     exclude_keywords: ["blockchain", "crypto"]
   weighting:
-    stack_match: 0.40
-    seniority_match: 0.20
-    salary_match: 0.20
+    stack_match: 0.35
+    experience_match: 0.15
+    seniority_match: 0.15
+    salary_match: 0.15
     remote_match: 0.10
     recency: 0.10
 ```
@@ -137,9 +139,10 @@ linkedin:
 
 | Dimensión | Peso | Descripción |
 |---|---|---|
-| Stack Match | 40% | Coincidencia de tecnologías con tu perfil |
-| Seniority | 20% | Nivel de experiencia requerido |
-| Salary | 20% | Rango salarial vs expectativa |
+| Stack Match | 35% | Coincidencia de tecnologías con tu perfil |
+| Experience Match | 15% | Similitud con experiencia laboral previa |
+| Seniority | 15% | Nivel de experiencia requerido |
+| Salary | 15% | Rango salarial vs expectativa (normalizado a anual) |
 | Remote | 10% | Modalidad de trabajo |
 | Recency | 10% | Frescura de la publicación |
 

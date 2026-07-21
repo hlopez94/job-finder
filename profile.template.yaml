@@ -41,8 +41,13 @@ profile:
   # --- Preferencias de búsqueda ---
   preferences:
     remote_only: true                    # solo buscar remoto
-    min_salary_usd: 80000               # salario mínimo anual
-    max_salary_usd: 150000              # salario máximo anual
+    salary_mode: "annually"             # cómo interpretar min/max salary: "hourly" | "monthly" | "annually"
+    min_salary: 80000                   # salario mínimo (en la unidad de salary_mode)
+    max_salary: 150000                  # salario máximo (en la unidad de salary_mode)
+    # Ejemplos:
+    #   salary_mode: "hourly"   → min_salary: 30,  max_salary: 45   → USD 30-45/hr
+    #   salary_mode: "monthly"  → min_salary: 6000, max_salary: 10000 → USD 6k-10k/mes
+    #   salary_mode: "annually" → min_salary: 80000, max_salary: 150000 → USD 80k-150k/año
     preferred_locations: []              # vacío = cualquier lugar si remote_only=true
     exclude_keywords:                    # keywords a excluir (en título o descripción)
       - "blockchain"
