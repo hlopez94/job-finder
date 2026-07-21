@@ -1,0 +1,47 @@
+# ============================================================================
+# Job Finder — Configuración (Template)
+# ============================================================================
+# Copia este archivo como "config.yaml" y completa con tus tokens reales.
+# config.yaml está en .gitignore para evitar commits accidentales.
+# ============================================================================
+
+# --- GitHub ---
+github:
+  token: "ghp_xxxxxxxxxxxxxxxxxxxx"     # Personal Access Token (classic)
+  # Scopes necesarios: repo, read:org (público es suficiente)
+  # Crear en: https://github.com/settings/tokens
+
+# --- LinkedIn Scraper MCP ---
+# Configuración para el MCP server linkedin-scraper
+linkedin:
+  email: "tu-email@example.com"
+  password: "tu-contraseña"            # considerar usar variables de entorno
+  search_keywords: [".NET", "Angular", "Senior", "Remote"]
+  locations: ["Worldwide", "United States", "Europe"]
+
+# --- Telegram ---
+telegram:
+  bot_token: "123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11"
+  chat_id: "123456789"                 # tu chat ID personal
+  # Cómo obtenerlos:
+  # 1. Crear bot con @BotFather en Telegram
+  # 2. Obtener CHAT_ID: enviar mensaje al bot, luego visitar
+  #    https://api.telegram.org/bot<TOKEN>/getUpdates
+
+# --- WeWorkRemotely ---
+weworkremotely:
+  enabled: true
+  categories:                          # categorías a trackear
+    - "software-dev"
+    - "full-stack"
+    - "devops-sysadmin"
+
+# --- Ranking Thresholds ---
+ranking:
+  min_score_to_notify: 60              # mínimo score (0-100) para incluir en notificación
+  show_top: 10                         # cuántos mostrar en Telegram
+
+# --- General ---
+general:
+  lookback_days: 30                    # días hacia atrás para buscar
+  output_dir: "output"                 # directorio de resultados

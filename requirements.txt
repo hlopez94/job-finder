@@ -1,0 +1,19 @@
+# Job Finder — Dependencias Python
+
+# HTTP & Scraping
+requests>=2.31.0
+beautifulsoup4>=4.12.2
+feedparser>=6.0.10
+
+# Config
+PyYAML>=6.0
+
+# Telegram
+python-telegram-bot>=20.7
+
+# URL parsing
+urllib3>=2.0.0
+
+# Development
+pytest>=8.0.0
+pytest-mock>=3.12.0

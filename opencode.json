@@ -1,0 +1,24 @@
+{
+  "mcpServers": {
+    "mcpvault-obsidian": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@bitbonsai/mcpvault@latest",
+        "D:\\work-scrapper\\job-finder"
+      ],
+      "description": "MCPVault — Acceso seguro al vault de Obsidian del proyecto Job Finder"
+    },
+    "linkedin-mcp-server": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@stickerdaniel/linkedin-mcp-server"
+      ],
+      "env": {
+        "LINKEDIN_COOKIE": "${LINKEDIN_LI_AT_COOKIE}"
+      },
+      "description": "LinkedIn Scraper MCP — Busca ofertas de trabajo y extrae perfiles de LinkedIn"
+    }
+  }
+}

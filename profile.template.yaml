@@ -1,0 +1,61 @@
+# ============================================================================
+# Job Finder — Perfil de Usuario (Template)
+# ============================================================================
+# Copia este archivo como "profile.yaml" y completa con tus datos reales.
+# profile.yaml está en .gitignore para evitar commits accidentales.
+# ============================================================================
+
+profile:
+  # --- Información básica ---
+  name: "Tu Nombre"
+  github_handle: "tu-github-user"       # usado para sugerencias contextuales
+  description: "Full-stack developer"   # breve descripción
+
+  # --- Stack tecnológico preferido ---
+  preferred_stack:
+    languages: [".NET", "C#", "TypeScript", "Python"]
+    frameworks: ["Angular", "ASP.NET Core", "Blazor", "React"]
+    databases: ["PostgreSQL", "SQL Server", "Redis"]
+    cloud: ["Azure", "AWS"]
+    tools: ["Docker", "Kubernetes", "GitHub Actions", "Terraform"]
+    methodologies: ["Clean Architecture", "DDD", "CQRS", "Event-Driven"]
+
+  # --- Experiencia ---
+  experience:
+    level: "Senior"                    # Junior | Mid | Senior | Lead | Staff
+    years: 8                            # años de experiencia total
+
+  # --- Experiencia laboral detallada (para comparación contra requisitos de jobs) ---
+  experience_history:
+    - role: "Senior Software Engineer"
+      company: "BEON.Tech"
+      years: "2021-presente"
+      stack: [".NET", "Angular", "Azure", "TypeScript", "PostgreSQL"]
+      description: "Desarrollo de SaaS multi-tenant con Clean Architecture y DDD"
+    - role: "Software Engineer"
+      company: "Ejemplo Anterior S.A."
+      years: "2019-2021"
+      stack: [".NET Core", "Angular", "SQL Server"]
+      description: "..."
+
+  # --- Preferencias de búsqueda ---
+  preferences:
+    remote_only: true                    # solo buscar remoto
+    min_salary_usd: 80000               # salario mínimo anual
+    max_salary_usd: 150000              # salario máximo anual
+    preferred_locations: []              # vacío = cualquier lugar si remote_only=true
+    exclude_keywords:                    # keywords a excluir (en título o descripción)
+      - "blockchain"
+      - "crypto"
+      - "WordPress"
+      - "PHP"
+    max_applications_per_run: 10         # top N jobs a notificar
+
+  # --- Ponderación del ranking (debe sumar 1.0) ---
+  weighting:
+    stack_match: 0.35                   # qué tanto matchea el stack tecnológico
+    experience_match: 0.15              # similitud con experiencia laboral previa
+    seniority_match: 0.15               # nivel de seniority requerido
+    salary_match: 0.15                  # rango salarial vs expectativa
+    remote_match: 0.10                  # modalidad remoto/presencial/híbrido
+    recency: 0.10                       # qué tan reciente es la publicación
